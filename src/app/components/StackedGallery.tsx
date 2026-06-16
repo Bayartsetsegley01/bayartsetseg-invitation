@@ -18,13 +18,10 @@ const CARD_W = 248;
 const CARD_H = 352;
 const RADIUS = 32;
 
-// Visual position for each slot in the deck (slot 0 = front, 1 = middle, 2 = back, 3+ = hidden queue)
+// Only the front card (slot 0) is visible — one photo at a time
 const slotStyle = (slot: number) => {
-  if (slot === 0) return { rotate: -1.5, scale: 1,    x: 0,  y: 0,  opacity: 1 };
-  if (slot === 1) return { rotate:  5.5, scale: 0.97, x: 8,  y: 8,  opacity: 1 };
-  if (slot === 2) return { rotate: -4,   scale: 0.93, x: 14, y: 16, opacity: 1 };
-  // Hidden queue — parked just behind the back card, invisible
-  return              { rotate: -5,   scale: 0.90, x: 17, y: 20, opacity: 0 };
+  if (slot === 0) return { rotate: 0, scale: 1, x: 0, y: 0, opacity: 1 };
+  return              { rotate: 0, scale: 1, x: 0, y: 0, opacity: 0 };
 };
 
 export const StackedGallery = () => {
@@ -56,24 +53,9 @@ export const StackedGallery = () => {
       transition={{ duration: 0.9, ease: 'easeOut' }}
       className="w-full flex flex-col items-center gap-8 py-4"
     >
-      {/* Header */}
-      <div className="text-center">
-        <p className="text-[10px] uppercase tracking-[0.35em] opacity-50 mb-2">{t.stackedGalleryLabel}</p>
-        <h2 className="text-2xl sm:text-3xl font-light tracking-wide">{t.stackedGalleryTitle}</h2>
-      </div>
+      {/* Card stack — no header */}
+      <div style={{ position: 'relative', width: CARD_W, height: CARD_H }}>
 
-      {/* Card stack */}
-      <div style={{ position: 'relative', width: CARD_W + 26, height: CARD_H + 26 }}>
-
-        {/* Soft radial glow */}
-        <div style={{
-          position: 'absolute',
-          top: '55%', left: '45%',
-          transform: 'translate(-50%,-50%)',
-          width: CARD_W + 180, height: CARD_H + 140,
-          background: 'radial-gradient(ellipse, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.55) 45%, transparent 72%)',
-          pointerEvents: 'none', zIndex: 0,
-        }} />
 
         {deck.map((photoIdx, slot) => {
           const s = slotStyle(slot);
@@ -161,7 +143,6 @@ export const StackedGallery = () => {
         ))}
       </div>
 
-      <p className="text-[9px] uppercase tracking-[0.3em] opacity-30 -mt-4">{t.stackedGalleryHint}</p>
     </motion.section>
   );
 };

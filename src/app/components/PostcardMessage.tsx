@@ -2,80 +2,99 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-// Simplified botanical iris drawn in SVG
+// ─── Botanical iris with bezier petals + gradient fills ───────────────────────
 const Iris = ({
-  x, y, stemH, fallColor, standColor, lean = 0, leafSide = 1,
+  id, x, y, stemH, fallColor, fallLight, standColor, lean = 0, leafSide = 1,
 }: {
-  x: number; y: number; stemH: number;
-  fallColor: string; standColor: string;
+  id: string; x: number; y: number; stemH: number;
+  fallColor: string; fallLight: string; standColor: string;
   lean?: number; leafSide?: number;
 }) => {
-  const c1x = lean > 0 ? 6 : -6;
-  const c2x = lean > 0 ? -3 : 3;
-  const lx1 = leafSide * 22;
-  const lx2 = leafSide * 28;
-  const lx3 = leafSide * 15;
+  const cx = lean > 0 ? 5 : -5;
+  const lx1 = leafSide * 20; const lx2 = leafSide * 26; const lx3 = leafSide * 14;
+
   return (
     <g transform={`translate(${x},${y}) rotate(${lean})`}>
-      {/* Stem */}
+      <defs>
+        <radialGradient id={`fall-${id}`} cx="40%" cy="30%" r="65%">
+          <stop offset="0%" stopColor={fallLight} stopOpacity="0.95"/>
+          <stop offset="100%" stopColor={fallColor} stopOpacity="0.98"/>
+        </radialGradient>
+        <radialGradient id={`stand-${id}`} cx="50%" cy="70%" r="60%">
+          <stop offset="0%" stopColor={fallLight} stopOpacity="0.88"/>
+          <stop offset="100%" stopColor={standColor} stopOpacity="0.95"/>
+        </radialGradient>
+      </defs>
+
+      {/* Stem — subtly curved */}
       <path
-        d={`M0,0 C${c1x},${-stemH * 0.35} ${c2x},${-stemH * 0.72} 0,${-stemH}`}
-        stroke="#3d6020"
-        strokeWidth="2.8"
-        fill="none"
-        strokeLinecap="round"
+        d={`M0,0 C${cx},${-stemH * 0.32} ${-cx * 0.5},${-stemH * 0.7} 0,${-stemH}`}
+        stroke="#3a5e1c" strokeWidth="2.6" fill="none" strokeLinecap="round"
       />
-      {/* Sword leaf */}
+
+      {/* Sword leaf with midrib */}
       <path
-        d={`M0,${-stemH * 0.44} C${lx1},${-stemH * 0.52} ${lx2},${-stemH * 0.8} ${lx3},${-stemH * 0.96} C${leafSide * 5},${-stemH * 0.8} 0,${-stemH * 0.52} 0,${-stemH * 0.44}`}
-        fill="#4d7828"
-        opacity="0.85"
+        d={`M0,${-stemH * 0.42} C${lx1},${-stemH * 0.5} ${lx2},${-stemH * 0.78} ${lx3},${-stemH * 0.94} C${leafSide * 4},${-stemH * 0.78} 0,${-stemH * 0.5} 0,${-stemH * 0.42}`}
+        fill="#4a7222" opacity="0.88"
       />
-      {/* Falls — 3 drooping petals */}
+      <line
+        x1={leafSide * 4} y1={-stemH * 0.45}
+        x2={leafSide * 13} y2={-stemH * 0.93}
+        stroke="#3a5e1c" strokeWidth="0.7" opacity="0.45"
+      />
+
       <g transform={`translate(0,${-stemH})`}>
-        <ellipse cx={-14} cy={15} rx={9.5} ry={21} fill={fallColor}
-          transform="rotate(30,-14,15)" opacity="0.88"/>
-        <ellipse cx={0} cy={17} rx={9.5} ry={20} fill={fallColor} opacity="0.88"/>
-        <ellipse cx={14} cy={15} rx={9.5} ry={21} fill={fallColor}
-          transform="rotate(-30,14,15)" opacity="0.88"/>
-        {/* Standards — 3 upright petals */}
-        <ellipse cx={-11} cy={-22} rx={8} ry={18} fill={standColor}
-          transform="rotate(-20,-11,-22)" opacity="0.93"/>
-        <ellipse cx={0} cy={-26} rx={8} ry={19} fill={standColor} opacity="0.93"/>
-        <ellipse cx={11} cy={-22} rx={8} ry={18} fill={standColor}
-          transform="rotate(20,11,-22)" opacity="0.93"/>
-        {/* Center */}
-        <circle cx={0} cy={0} r={6} fill="#fffce0" opacity="0.85"/>
-        <circle cx={0} cy={0} r={3.5} fill="#f5e040" opacity="0.65"/>
+        {/* Fall petals — 3 drooping, with beard stripe */}
+        {([-38, 0, 38] as number[]).map((rot, i) => (
+          <g key={i} transform={`rotate(${rot})`}>
+            <path
+              d="M0,0 C-13,-4 -20,12 -17,32 C-13,50 -4,58 0,60 C4,58 13,50 17,32 C20,12 13,-4 0,0"
+              fill={`url(#fall-${id})`} opacity="0.9"
+            />
+            {/* Beard (fuzzy stripe on fall petals) */}
+            <path d="M-1,4 C-1,14 0,22 1,30" stroke="white" strokeWidth="2.2"
+              opacity="0.45" strokeLinecap="round" fill="none"/>
+            <path d="M0,4 C0,14 0,22 0,30" stroke="#f8e870" strokeWidth="1.2"
+              opacity="0.35" strokeLinecap="round" fill="none"/>
+          </g>
+        ))}
+
+        {/* Standard petals — 3 upright */}
+        {([-36, 0, 36] as number[]).map((rot, i) => (
+          <g key={i} transform={`rotate(${rot + 18})`}>
+            <path
+              d="M0,2 C-10,0 -15,-18 -11,-40 C-7,-58 0,-66 0,-66 C0,-66 7,-58 11,-40 C15,-18 10,0 0,2"
+              fill={`url(#stand-${id})`} opacity="0.93"
+            />
+          </g>
+        ))}
+
+        {/* Center detail */}
+        <ellipse cx={0} cy={0} rx={7} ry={5} fill="#fff8d4" opacity="0.9"/>
+        <ellipse cx={0} cy={0} rx={4} ry={3} fill="#f0d840" opacity="0.7"/>
+        <circle cx={0} cy={-1} r={2} fill="#e8b820" opacity="0.5"/>
       </g>
     </g>
   );
 };
 
-// Wrap text into lines for SVG tspan rendering
 function toLines(text: string, maxChars: number): string[] {
   if (!text) return [];
   const words = text.split(' ');
   const lines: string[] = [];
   let line = '';
   for (const w of words) {
-    if (line.length + w.length + 1 <= maxChars) {
-      line = line ? line + ' ' + w : w;
-    } else {
-      if (line) lines.push(line);
-      line = w;
-    }
+    if (line.length + w.length + 1 <= maxChars) { line = line ? line + ' ' + w : w; }
+    else { if (line) lines.push(line); line = w; }
   }
   if (line) lines.push(line);
   return lines;
 }
 
-interface GMessage {
-  id: number;
-  from: string;
-  text: string;
-  rotate: number;
-}
+interface GMessage { id: number; from: string; text: string; rotate: number; }
+
+const FONT = 'Montserrat, Arial, sans-serif';
+const CURSIVE = "'Dancing Script', cursive";
 
 export const PostcardMessage = () => {
   const { t } = useLanguage();
@@ -89,15 +108,12 @@ export const PostcardMessage = () => {
     e.preventDefault();
     if (!message.trim() || !from.trim()) return;
     const msg: GMessage = {
-      id: Date.now(),
-      from: from.trim(),
-      text: message.trim(),
+      id: Date.now(), from: from.trim(), text: message.trim(),
       rotate: (messages.length % 2 === 0 ? 1 : -1) * (1 + (messages.length % 3) * 0.5),
     };
     setMessages(prev => [msg, ...prev]);
     setLatest(msg);
-    setMessage('');
-    setFrom('');
+    setMessage(''); setFrom('');
     setDone(true);
     setTimeout(() => setDone(false), 3000);
   };
@@ -112,95 +128,106 @@ export const PostcardMessage = () => {
       transition={{ duration: 0.9, ease: 'easeOut' }}
       className="w-full flex flex-col items-center gap-10 py-4"
     >
-      {/* Header */}
-      <div className="text-center">
-        <p className="text-[10px] uppercase tracking-[0.35em] opacity-50 mb-2">{t.postcardLabel}</p>
-        <h2 className="text-2xl sm:text-3xl font-light tracking-wide">{t.postcardTitle}</h2>
-      </div>
+      {/* Title — just "Захиа" */}
+      <h2 className="text-2xl sm:text-3xl font-light tracking-wide text-center">
+        {t.postcardTitle}
+      </h2>
 
-      {/* Scene + Form side by side */}
       <div className="w-full max-w-2xl flex flex-col sm:flex-row gap-6 items-center sm:items-start justify-center">
 
         {/* ── Envelope Scene ── */}
         <div className="flex-shrink-0">
-          <div
-            className="rounded-2xl overflow-hidden"
-            style={{
-              width: 260,
-              height: 380,
-              background: 'linear-gradient(175deg, #fefce8 0%, #e8f4fa 100%)',
-            }}
-          >
-            <svg viewBox="0 0 260 380" width="260" height="380" xmlns="http://www.w3.org/2000/svg">
+          <div className="rounded-2xl overflow-hidden" style={{ width: 260, height: 390,
+            background: 'linear-gradient(175deg, #fefce8 0%, #e8f4fa 100%)' }}>
+            <svg viewBox="0 0 260 390" width="260" height="390" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                {/* Kraft paper gradient for envelope */}
+                <linearGradient id="envBody" x1="0" y1="0" x2="0.2" y2="1">
+                  <stop offset="0%" stopColor="#d4b484"/>
+                  <stop offset="100%" stopColor="#b8925a"/>
+                </linearGradient>
+                <linearGradient id="envLeft" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#a07840"/>
+                  <stop offset="100%" stopColor="#b8935c"/>
+                </linearGradient>
+                <linearGradient id="envRight" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#c4a068"/>
+                  <stop offset="100%" stopColor="#a88040"/>
+                </linearGradient>
+                <linearGradient id="envFlap" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#c8a060"/>
+                  <stop offset="100%" stopColor="#a07838"/>
+                </linearGradient>
+                {/* Drop shadow filter for letter */}
+                <filter id="letterShadow" x="-10%" y="-10%" width="120%" height="120%">
+                  <feDropShadow dx="1" dy="2" stdDeviation="3" floodOpacity="0.15"/>
+                </filter>
+              </defs>
 
-              {/* ── LETTER ── (behind flowers & above envelope) */}
-              <g transform="rotate(-2,130,290)">
-                <rect x="42" y="155" width="174" height="208" fill="#f4f2ed" rx="2"
-                  style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.12))' }}/>
+              {/* ── LETTER peeking out ── */}
+              <g transform="rotate(-2,130,295)" filter="url(#letterShadow)">
+                <rect x="44" y="158" width="172" height="210" rx="2" fill="#f5f3ee"/>
                 {/* Ruled lines */}
-                {[0,1,2,3,4,5].map(i => (
-                  <line key={i} x1="54" y1={185 + i * 24} x2="204" y2={185 + i * 24}
-                    stroke="#cdc4b0" strokeWidth="0.7" opacity="0.5"/>
+                {[0,1,2,3,4,5,6].map(i => (
+                  <line key={i} x1="56" y1={186 + i * 24} x2="204" y2={186 + i * 24}
+                    stroke="#ccc5b0" strokeWidth="0.65" opacity="0.5"/>
                 ))}
-                {/* Message or placeholder */}
                 {latest ? (
                   <>
-                    <text
-                      fontFamily="'Dancing Script',cursive"
-                      fontSize="13"
-                      fill="#3a2e1c"
-                      opacity="0.88"
-                    >
-                      {msgLines.slice(0, 6).map((line, i) => (
-                        <tspan key={i} x="56" y={186 + i * 24}>{line}</tspan>
+                    <text fontFamily={CURSIVE} fontSize="13" fill="#3a2e1c" opacity="0.88">
+                      {msgLines.slice(0, 7).map((line, i) => (
+                        <tspan key={i} x="58" y={188 + i * 24}>{line}</tspan>
                       ))}
                     </text>
-                    <text x="196" y={186 + Math.min(msgLines.length, 6) * 24 + 14}
-                      fontFamily="'Dancing Script',cursive" fontSize="12"
-                      fill="#6a5030" textAnchor="end" opacity="0.8">
+                    <text x="198" y={188 + Math.min(msgLines.length, 7) * 24 + 12}
+                      fontFamily={CURSIVE} fontSize="12" fill="#6a5030" textAnchor="end" opacity="0.8">
                       — {latest.from}
                     </text>
                   </>
                 ) : (
-                  <text x="130" y="255" fontFamily="Georgia,serif" fontSize="9"
-                    fill="#b8b0a0" textAnchor="middle" opacity="0.7">
+                  <text x="130" y="262" fontFamily={FONT} fontSize="9"
+                    fill="#b8b0a0" textAnchor="middle" opacity="0.6">
                     {t.postcardEmptyHint}
                   </text>
                 )}
               </g>
 
-              {/* ── IRIS FLOWERS ── */}
-              {/* Yellow — far left, leaning left */}
-              <Iris x={60} y={255} stemH={118} fallColor="#c09818" standColor="#e0c030" lean={-14} leafSide={-1}/>
-              {/* Dark maroon */}
-              <Iris x={98} y={255} stemH={142} fallColor="#5e1a22" standColor="#8c3040" lean={-5} leafSide={1}/>
-              {/* Rust orange — tallest, center */}
-              <Iris x={133} y={255} stemH={156} fallColor="#b84020" standColor="#dc6040" lean={1} leafSide={-1}/>
-              {/* Red-orange */}
-              <Iris x={168} y={255} stemH={144} fallColor="#b84830" standColor="#d86050" lean={5} leafSide={1}/>
-              {/* Pink */}
-              <Iris x={200} y={255} stemH={124} fallColor="#c08888" standColor="#d8aeae" lean={9} leafSide={-1}/>
-              {/* Blue — far right */}
-              <Iris x={232} y={255} stemH={110} fallColor="#2e4898" standColor="#5878cc" lean={16} leafSide={1}/>
+              {/* ── FLOWERS (most realistic above envelope) ── */}
+              {/* Yellow — far left, leaning */}
+              <Iris id="a" x={58} y={258} stemH={122} fallColor="#b89010" fallLight="#ddb820" standColor="#c8a420" lean={-14} leafSide={-1}/>
+              {/* Dark burgundy/maroon */}
+              <Iris id="b" x={96} y={258} stemH={146} fallColor="#5a1520" fallLight="#8a2838" standColor="#7a2030" lean={-5} leafSide={1}/>
+              {/* Deep rust orange — tallest, center */}
+              <Iris id="c" x={132} y={258} stemH={160} fallColor="#b83818" fallLight="#d85838" standColor="#c84828" lean={1} leafSide={-1}/>
+              {/* Warm red */}
+              <Iris id="d" x={168} y={258} stemH={148} fallColor="#b04020" fallLight="#d06038" standColor="#c05030" lean={6} leafSide={1}/>
+              {/* Dusty pink */}
+              <Iris id="e" x={202} y={258} stemH={128} fallColor="#b07878" fallLight="#d0a898" standColor="#c09090" lean={10} leafSide={-1}/>
+              {/* Blue iris — far right */}
+              <Iris id="f" x={236} y={258} stemH={112} fallColor="#284890" fallLight="#5070c0" standColor="#4860b0" lean={17} leafSide={1}/>
 
               {/* ── ENVELOPE BODY ── */}
-              <rect x="14" y="248" width="232" height="128" fill="#c4a882" rx="3"/>
+              {/* Main body */}
+              <rect x="14" y="250" width="232" height="135" rx="2" fill="url(#envBody)"/>
 
-              {/* Fold triangles */}
-              {/* Left */}
-              <path d="M14,248 L14,376 L130,314 Z" fill="#b8936a"/>
-              {/* Right */}
-              <path d="M246,248 L246,376 L130,314 Z" fill="#c2a070"/>
-              {/* Bottom */}
-              <path d="M14,376 L130,314 L246,376 Z" fill="#b08858"/>
-              {/* Top flap (opening) — darker V pointing down */}
-              <path d="M14,248 L130,300 L246,248 Z" fill="#a87c48"/>
-              {/* Envelope rim line */}
-              <line x1="14" y1="248" x2="246" y2="248" stroke="#9a7038" strokeWidth="1.2"/>
+              {/* Fold shadows — left triangle */}
+              <path d="M14,250 L14,385 L130,318 Z" fill="url(#envLeft)" opacity="0.9"/>
+              {/* Right triangle */}
+              <path d="M246,250 L246,385 L130,318 Z" fill="url(#envRight)" opacity="0.9"/>
+              {/* Bottom triangle */}
+              <path d="M14,385 L130,318 L246,385 Z" fill="#a07840" opacity="0.88"/>
+              {/* Top flap (open) — points down into envelope */}
+              <path d="M14,250 L130,304 L246,250 Z" fill="url(#envFlap)"/>
 
-              {/* To: label */}
-              <text x="36" y="360" fontFamily="'Dancing Script',cursive"
-                fontSize="13" fill="#7a5838" opacity="0.78">
+              {/* Fold edge highlights for depth */}
+              <line x1="14" y1="250" x2="130" y2="304" stroke="rgba(255,255,255,0.12)" strokeWidth="1"/>
+              <line x1="246" y1="250" x2="130" y2="304" stroke="rgba(0,0,0,0.08)" strokeWidth="1"/>
+
+              {/* Envelope rim */}
+              <line x1="14" y1="250" x2="246" y2="250" stroke="#8a6828" strokeWidth="1.2"/>
+
+              {/* "To:" label in cursive */}
+              <text x="38" y="372" fontFamily={CURSIVE} fontSize="13" fill="#7a5830" opacity="0.78">
                 To: Баярцэцэг
               </text>
             </svg>
@@ -217,79 +244,62 @@ export const PostcardMessage = () => {
             borderRadius: 16,
             boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
             padding: '24px 20px',
-            minWidth: 0,
+            fontFamily: FONT,
           }}
         >
-          {/* From */}
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] opacity-55 mb-1">
+            <label style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.55, marginBottom: 4, fontFamily: FONT }}>
               {t.postcardFrom}
             </label>
-            <p className="text-[10px] opacity-35 mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-              {t.postcardFromHint}
-            </p>
             <input
               type="text"
               value={from}
               onChange={e => setFrom(e.target.value)}
-              required
-              maxLength={40}
+              required maxLength={40}
               placeholder={t.postcardFromPlaceholder}
-              className="w-full rounded-xl border px-3 py-2.5 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-current"
-              style={{ borderColor: 'rgba(0,0,0,0.10)' }}
+              className="w-full rounded-xl border px-3 py-2.5 bg-transparent focus:outline-none focus:ring-1 focus:ring-current"
+              style={{ borderColor: 'rgba(0,0,0,0.10)', fontSize: 14, fontFamily: FONT }}
             />
-            <p className="text-right text-[9px] opacity-25 mt-1">{from.length}/40</p>
           </div>
 
-          {/* Message */}
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] opacity-55 mb-1">
+            <label style={{ display: 'block', fontSize: 10, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.55, marginBottom: 4, fontFamily: FONT }}>
               {t.postcardMessageLabel}
             </label>
             <textarea
               value={message}
               onChange={e => setMessage(e.target.value)}
-              required
-              maxLength={200}
-              rows={5}
+              required maxLength={200} rows={5}
               placeholder={t.postcardPlaceholder}
-              className="w-full rounded-xl border px-3 py-2.5 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-current resize-none"
+              className="w-full rounded-xl border px-3 py-2.5 bg-transparent focus:outline-none focus:ring-1 focus:ring-current resize-none"
               style={{
                 borderColor: 'rgba(0,0,0,0.10)',
-                fontFamily: "'Dancing Script', cursive",
+                fontFamily: CURSIVE,
                 fontSize: 17,
                 lineHeight: 1.55,
               }}
             />
-            <p className="text-right text-[9px] opacity-25 mt-0.5">{message.length}/200</p>
+            <p style={{ textAlign: 'right', fontSize: 9, opacity: 0.25, marginTop: 2, fontFamily: FONT }}>{message.length}/200</p>
           </div>
 
           <AnimatePresence mode="wait">
             {done ? (
-              <motion.div
-                key="sent"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="text-center py-3 text-sm"
-                style={{ color: '#5a8a38', fontFamily: 'Georgia, serif' }}
-              >
+              <motion.div key="sent" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }} className="text-center py-3 text-sm"
+                style={{ color: '#5a8a38', fontFamily: FONT }}>
                 🌸 {t.postcardSent}
               </motion.div>
             ) : (
-              <motion.button
-                key="btn"
-                type="submit"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full py-3 rounded-xl text-xs font-medium tracking-[0.2em] uppercase"
+              <motion.button key="btn" type="submit"
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                className="w-full py-3 rounded-xl text-xs font-medium tracking-widest uppercase"
                 style={{
                   background: 'linear-gradient(135deg, #e4ccb0 0%, #ceb898 100%)',
                   color: '#4a3020',
                   border: '1px solid rgba(0,0,0,0.06)',
-                  fontFamily: 'Montserrat, sans-serif',
-                }}
-              >
+                  fontFamily: FONT,
+                  letterSpacing: '0.18em',
+                }}>
                 {t.postcardSubmit} ✉
               </motion.button>
             )}
@@ -297,51 +307,29 @@ export const PostcardMessage = () => {
         </form>
       </div>
 
-      {/* ── Submitted messages ── */}
+      {/* ── Saved messages ── */}
       <AnimatePresence>
         {messages.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="w-full max-w-2xl"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="w-full max-w-2xl">
             <p className="text-[10px] uppercase tracking-[0.3em] opacity-40 text-center mb-4"
-              style={{ fontFamily: 'Georgia, serif' }}>
-              {t.postcardMessagesTitle}
-            </p>
+              style={{ fontFamily: FONT }}>{t.postcardMessagesTitle}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {messages.map(msg => (
-                <motion.div
-                  key={msg.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
+                <motion.div key={msg.id}
+                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   style={{
-                    background: 'linear-gradient(160deg, #fdfaf4 0%, #f5efe4 100%)',
+                    background: 'linear-gradient(160deg,#fdfaf4 0%,#f5efe4 100%)',
                     border: '1px solid rgba(0,0,0,0.06)',
-                    borderRadius: 12,
-                    padding: '16px 18px',
+                    borderRadius: 12, padding: '16px 18px',
                     boxShadow: '0 4px 18px rgba(0,0,0,0.07)',
                     transform: `rotate(${msg.rotate}deg)`,
-                  }}
-                >
-                  <p style={{
-                    fontFamily: "'Dancing Script', cursive",
-                    fontSize: 17,
-                    lineHeight: 1.55,
-                    color: '#3a2e1c',
-                    marginBottom: 10,
                   }}>
+                  <p style={{ fontFamily: CURSIVE, fontSize: 17, lineHeight: 1.55, color: '#3a2e1c', marginBottom: 10 }}>
                     {msg.text}
                   </p>
-                  <p style={{
-                    fontFamily: "'Dancing Script', cursive",
-                    fontSize: 14,
-                    color: '#7a5838',
-                    opacity: 0.85,
-                    borderTop: '1px solid rgba(0,0,0,0.07)',
-                    paddingTop: 8,
-                  }}>
+                  <p style={{ fontFamily: CURSIVE, fontSize: 14, color: '#7a5838', opacity: 0.85,
+                    borderTop: '1px solid rgba(0,0,0,0.07)', paddingTop: 8 }}>
                     — {msg.from}
                   </p>
                 </motion.div>

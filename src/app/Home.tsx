@@ -46,11 +46,11 @@ export const Home = () => {
             transition={{ duration: 0.8, ease: 'easeOut' }}
             className="flex flex-col items-center w-full"
           >
-            <h1 className="text-sm sm:text-base font-extralight mb-6 tracking-[0.3em] uppercase opacity-60">
+            <h1 className="text-xl sm:text-2xl font-light mb-6 tracking-[0.2em] uppercase opacity-70">
               {t.heroTitle}
             </h1>
-            
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-light mb-8 tracking-wide">
+
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-light mb-8 tracking-wide">
               {t.heroName}
             </h2>
 

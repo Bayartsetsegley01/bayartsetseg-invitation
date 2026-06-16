@@ -14,21 +14,38 @@ export const RSVP = () => {
 
   const MAX_NO_CLICKS = 3;
 
-  const handleNoHover = () => {
-    if (noClicks < MAX_NO_CLICKS && noButtonRef.current) {
-      const x = Math.random() * 150 - 75;
-      const y = Math.random() * 150 - 75;
+  const dodge = () => {
+    if (noButtonRef.current) {
+      const x = Math.random() * 160 - 80;
+      const y = Math.random() * 100 - 50;
       noButtonRef.current.style.transform = `translate(${x}px, ${y}px)`;
     }
   };
 
-  const handleNoClick = (e: React.MouseEvent) => {
+  // Desktop: text changes on mouse hover
+  const handleNoHover = (e: React.PointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
     if (noClicks < MAX_NO_CLICKS) {
-      e.preventDefault();
-      setNoClicks((prev) => prev + 1);
-      handleNoHover();
+      setNoClicks(prev => prev + 1);
+      dodge();
+    }
+  };
+
+  // Mobile: text changes on tap/click
+  const handleNoClick = (e: React.MouseEvent) => {
+    const isMouse = (e.nativeEvent as PointerEvent).pointerType === 'mouse';
+    if (isMouse) {
+      // Desktop click — only handle final give-up
+      if (noClicks >= MAX_NO_CLICKS) setAttending(false);
     } else {
-      setAttending(false);
+      // Touch
+      if (noClicks < MAX_NO_CLICKS) {
+        e.preventDefault();
+        setNoClicks(prev => prev + 1);
+        dodge();
+      } else {
+        setAttending(false);
+      }
     }
   };
 
@@ -94,7 +111,7 @@ export const RSVP = () => {
                     <button
                       type="button"
                       ref={noButtonRef}
-                      onMouseEnter={handleNoHover}
+                      onPointerEnter={handleNoHover}
                       onClick={handleNoClick}
                       className="px-6 py-2 theme-accent-bg text-black rounded-full text-sm font-medium transition-all duration-300 absolute right-4 sm:right-12 min-w-[80px]"
                     >

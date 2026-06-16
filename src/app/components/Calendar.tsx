@@ -10,10 +10,6 @@ export const Calendar = () => {
 
   return (
     <div className="w-full max-w-xs mx-auto text-center">
-      <h2 className="text-base font-medium theme-text mb-6 uppercase tracking-[0.2em]">
-        {t.calendarTitle}
-      </h2>
-      
       <div className="p-2">
         <h3 className="text-xs font-medium theme-text mb-4 uppercase tracking-widest opacity-60">
           {t.monthYear}
