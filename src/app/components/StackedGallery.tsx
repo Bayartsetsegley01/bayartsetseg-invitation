@@ -14,50 +14,38 @@ const photos = [
   "https://images.unsplash.com/photo-1511629091441-ee46146481b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjZWxlYnJhdGlvbnxlbnwxfHx8fDE3ODE1ODc3OTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
 ];
 
-const CARD_W = 252;
+const CARD_W = 248;
 const CARD_H = 352;
-const RADIUS = 34;
+const RADIUS = 32;
 
-type Dir = 1 | -1;
+// Front → back, index 0 is the top card
+const STACK = [
+  { rotate: -1.5, scale: 1,    x: 0,  y: 0,  z: 12, shadow: '0 24px 64px rgba(0,0,0,0.22), 0 6px 20px rgba(0,0,0,0.10)' },
+  { rotate:  5.5, scale: 0.97, x: 8,  y: 8,  z: 11, shadow: '0 12px 32px rgba(0,0,0,0.13)' },
+  { rotate: -4,   scale: 0.93, x: 14, y: 16, z: 10, shadow: '0 6px 18px rgba(0,0,0,0.08)' },
+];
 
-const cardVariants = {
-  enter: (dir: Dir) => ({
-    x: dir * 320,
-    rotate: dir * 10,
-    opacity: 0,
-    scale: 0.95,
-  }),
-  center: {
-    x: 0,
-    rotate: 0,
-    opacity: 1,
-    scale: 1,
-  },
-  exit: (dir: Dir) => ({
-    x: dir * -320,
-    rotate: dir * -10,
-    opacity: 0,
-    scale: 0.95,
-    transition: { duration: 0.25, ease: 'easeIn' },
-  }),
-};
+// Where new cards appear FROM before sliding into stack (further-back position)
+const NEW_CARD_INITIAL = { rotate: -7, scale: 0.87, x: 20, y: 24, opacity: 0 };
 
 export const StackedGallery = () => {
   const { t } = useLanguage();
-  const [current, setCurrent] = useState(0);
-  const [dir, setDir] = useState<Dir>(1);
 
-  const navigate = (d: Dir) => {
-    setDir(d);
-    setCurrent(prev => (prev + d + photos.length) % photos.length);
+  // stack[0] = front photo, stack[1] = middle, stack[2] = back
+  const [stack, setStack] = useState<number[]>([0, 1, 2]);
+
+  const goNext = () => {
+    setStack(prev => {
+      const newBack = (prev[prev.length - 1] + 1) % photos.length;
+      return [...prev.slice(1), newBack];
+    });
   };
 
-  const goTo = (i: number) => {
-    setDir(i >= current ? 1 : -1);
-    setCurrent(i);
+  const goToPhoto = (idx: number) => {
+    setStack([idx, (idx + 1) % photos.length, (idx + 2) % photos.length]);
   };
 
-  const backIdx = (current + 1) % photos.length;
+  const frontPhoto = stack[0];
 
   return (
     <motion.section
@@ -74,96 +62,90 @@ export const StackedGallery = () => {
       </div>
 
       {/* Card stack */}
-      <div
-        style={{
-          position: 'relative',
-          width: CARD_W + 36,
-          height: CARD_H + 24,
-        }}
-      >
-        {/* Soft white radial glow behind the cards */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '40%',
-            transform: 'translate(-50%, -50%)',
-            width: CARD_W + 160,
-            height: CARD_H + 120,
-            background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 40%, transparent 72%)',
-            pointerEvents: 'none',
-            zIndex: 0,
-          }}
-        />
+      <div style={{ position: 'relative', width: CARD_W + 24, height: CARD_H + 24 }}>
 
-        {/* Back card — next photo, offset right */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 14,
-            left: 30,
-            width: CARD_W,
-            height: CARD_H,
-            borderRadius: RADIUS,
-            overflow: 'hidden',
-            transform: 'rotate(4deg) scale(0.96)',
-            zIndex: 1,
-            boxShadow: '0 8px 28px rgba(0,0,0,0.10)',
-          }}
-        >
-          <ImageWithFallback
-            src={photos[backIdx]}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        </div>
+        {/* Soft radial glow */}
+        <div style={{
+          position: 'absolute',
+          top: '55%', left: '45%',
+          transform: 'translate(-50%, -50%)',
+          width: CARD_W + 180,
+          height: CARD_H + 140,
+          background: 'radial-gradient(ellipse, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.55) 45%, transparent 72%)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }} />
 
-        {/* Front card — draggable, animated */}
-        <AnimatePresence custom={dir} mode="popLayout">
-          <motion.div
-            key={current}
-            custom={dir}
-            variants={cardVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
-              type: 'spring',
-              stiffness: 300,
-              damping: 28,
-              mass: 0.8,
-            }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.15}
-            onDragEnd={(_, info) => {
-              if (info.offset.x < -60 || info.velocity.x < -500) navigate(1);
-              else if (info.offset.x > 60 || info.velocity.x > 500) navigate(-1);
-            }}
-            onClick={() => navigate(1)}
-            whileTap={{ cursor: 'grabbing', scale: 0.98 }}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: CARD_W,
-              height: CARD_H,
-              borderRadius: RADIUS,
-              overflow: 'hidden',
-              zIndex: 2,
-              cursor: 'grab',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.18), 0 6px 24px rgba(0,0,0,0.10)',
-              userSelect: 'none',
-            }}
-          >
-            <ImageWithFallback
-              src={photos[current]}
-              alt={`Photo ${current + 1}`}
-              className="w-full h-full object-cover"
-              draggable={false}
-              style={{ pointerEvents: 'none' }}
-            />
-          </motion.div>
+        {/*
+          AnimatePresence initial={false}:
+          — First render: cards just appear at their stack positions (no fan-out)
+          — Later adds: new card plays its `initial` → `animate` (coming from behind) ✓
+          — Removes: front card plays `exit` (flies away) ✓
+        */}
+        <AnimatePresence initial={false}>
+          {stack.map((photoIdx, stackPos) => {
+            const pos = STACK[stackPos] ?? STACK[STACK.length - 1];
+            const isFront = stackPos === 0;
+
+            return (
+              <motion.div
+                key={photoIdx}
+                initial={NEW_CARD_INITIAL}
+                animate={{
+                  rotate: pos.rotate,
+                  scale: pos.scale,
+                  x: pos.x,
+                  y: pos.y,
+                  opacity: 1,
+                  zIndex: pos.z,
+                }}
+                exit={{
+                  x: -(CARD_W + 80),
+                  y: -50,
+                  rotate: -22,
+                  opacity: 0,
+                  scale: 0.88,
+                  zIndex: 20,          // stay on top while flying away
+                  transition: { duration: 0.28, ease: [0.4, 0, 1, 1] },
+                }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 28,
+                  mass: 0.85,
+                }}
+                drag={isFront ? 'x' : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.1}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x < -55 || info.velocity.x < -450) goNext();
+                }}
+                onClick={isFront ? goNext : undefined}
+                whileTap={isFront ? { scale: 0.985 } : undefined}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: CARD_W,
+                  height: CARD_H,
+                  borderRadius: RADIUS,
+                  overflow: 'hidden',
+                  cursor: isFront ? 'grab' : 'default',
+                  boxShadow: pos.shadow,
+                  touchAction: 'none',
+                  willChange: 'transform',
+                }}
+              >
+                <ImageWithFallback
+                  src={photos[photoIdx]}
+                  alt={`Photo ${photoIdx + 1}`}
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                  style={{ pointerEvents: 'none', userSelect: 'none' }}
+                />
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
 
@@ -172,10 +154,10 @@ export const StackedGallery = () => {
         {photos.map((_, i) => (
           <motion.button
             key={i}
-            onClick={() => goTo(i)}
+            onClick={() => goToPhoto(i)}
             animate={{
-              width: i === current ? 28 : 8,
-              backgroundColor: i === current ? '#1c1c1c' : '#d0d0d0',
+              width: i === frontPhoto ? 28 : 8,
+              backgroundColor: i === frontPhoto ? '#1c1c1c' : '#d0d0d0',
             }}
             transition={{ type: 'spring', stiffness: 380, damping: 28 }}
             style={{
