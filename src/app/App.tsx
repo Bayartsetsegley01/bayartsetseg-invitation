@@ -2,6 +2,7 @@ import React from 'react';
 import { RouterProvider } from 'react-router';
 import { createBrowserRouter } from 'react-router';
 import { Home } from './Home';
+import { Admin } from './Admin';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -15,8 +16,12 @@ const Root = () => (
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     Component: Root,
+  },
+  {
+    path: '/admin',
+    Component: Admin,
   },
 ]);
 

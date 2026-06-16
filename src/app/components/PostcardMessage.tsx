@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { supabase } from '../../lib/supabase';
 
 // ─── Botanical iris with bezier petals + gradient fills ───────────────────────
 const Iris = ({
@@ -96,6 +97,8 @@ interface GMessage { id: number; from: string; text: string; rotate: number; }
 const FONT = 'Montserrat, Arial, sans-serif';
 const CURSIVE = "'Dancing Script', cursive";
 
+const stableRotation = (id: number) => ((id % 9) - 4) * 0.6;
+
 export const PostcardMessage = () => {
   const { t } = useLanguage();
   const [from, setFrom] = useState('');
@@ -103,19 +106,49 @@ export const PostcardMessage = () => {
   const [messages, setMessages] = useState<GMessage[]>([]);
   const [latest, setLatest] = useState<GMessage | null>(null);
   const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from('postcards')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (data) {
+        setMessages(data.map(p => ({
+          id: p.id,
+          from: p.from_name,
+          text: p.message,
+          rotate: stableRotation(p.id),
+        })));
+      }
+    };
+    load();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || !from.trim()) return;
-    const msg: GMessage = {
-      id: Date.now(), from: from.trim(), text: message.trim(),
-      rotate: (messages.length % 2 === 0 ? 1 : -1) * (1 + (messages.length % 3) * 0.5),
-    };
-    setMessages(prev => [msg, ...prev]);
-    setLatest(msg);
-    setMessage(''); setFrom('');
-    setDone(true);
-    setTimeout(() => setDone(false), 3000);
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from('postcards')
+      .insert({ from_name: from.trim(), message: message.trim() })
+      .select()
+      .single();
+
+    setLoading(false);
+    if (!error && data) {
+      const newMsg: GMessage = {
+        id: data.id, from: data.from_name, text: data.message,
+        rotate: stableRotation(data.id),
+      };
+      setMessages(prev => [newMsg, ...prev]);
+      setLatest(newMsg);
+      setMessage(''); setFrom('');
+      setDone(true);
+      setTimeout(() => setDone(false), 3000);
+    }
   };
 
   const msgLines = toLines(latest?.text ?? '', 18);
@@ -291,16 +324,18 @@ export const PostcardMessage = () => {
               </motion.div>
             ) : (
               <motion.button key="btn" type="submit"
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                disabled={loading}
+                whileHover={loading ? {} : { scale: 1.02 }} whileTap={{ scale: 0.97 }}
                 className="w-full py-3 rounded-xl text-xs font-medium tracking-widest uppercase"
                 style={{
-                  background: 'linear-gradient(135deg, #e4ccb0 0%, #ceb898 100%)',
+                  background: loading ? '#ddd' : 'linear-gradient(135deg, #e4ccb0 0%, #ceb898 100%)',
                   color: '#4a3020',
                   border: '1px solid rgba(0,0,0,0.06)',
                   fontFamily: FONT,
                   letterSpacing: '0.18em',
+                  cursor: loading ? 'not-allowed' : 'pointer',
                 }}>
-                {t.postcardSubmit} ✉
+                {loading ? '...' : `${t.postcardSubmit} ✉`}
               </motion.button>
             )}
           </AnimatePresence>

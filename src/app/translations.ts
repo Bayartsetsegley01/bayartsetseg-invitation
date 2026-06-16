@@ -25,6 +25,7 @@ export const translations = {
       "Итгэлтэй байна уу? 😭",
       "Арай ч дээ... 💔"
     ],
+    rsvpGuests: "Хэдэн хүн ирэх вэ?",
     whyNot: "Яагаад ирэх боломжгүй вэ?",
     thankYou: "Миний амьдралын хамгийн дурсамжтай, баярт өдрийг хуваалцахаар зөвшөөрсөнд баярлалаа. Хамтдаа өнгөрүүлэх энэ мөчийг хэзээ ч мартахгүй ээ! ❤️",
     submit: "Илгээх",
@@ -73,6 +74,7 @@ export const translations = {
       "Are you sure? 😭",
       "No way... 💔"
     ],
+    rsvpGuests: "How many people are coming?",
     whyNot: "Why can't you attend?",
     thankYou: "Thank you for deciding to share this unforgettable and joyous day with me. I will never forget the moment we spend together! ❤️",
     submit: "Submit",
