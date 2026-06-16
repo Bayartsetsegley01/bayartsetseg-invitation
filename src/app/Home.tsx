@@ -6,6 +6,8 @@ import { useTheme } from './contexts/ThemeContext';
 import { Countdown } from './components/Countdown';
 import { Calendar } from './components/Calendar';
 import { Gallery } from './components/Gallery';
+import { StackedGallery } from './components/StackedGallery';
+import { PostcardMessage } from './components/PostcardMessage';
 import { RSVP } from './components/RSVP';
 import { LocationSection } from './components/LocationSection';
 
@@ -68,6 +70,11 @@ export const Home = () => {
           </motion.div>
         </section>
 
+        {/* Stacked Polaroid Gallery */}
+        <section className="w-full">
+          <StackedGallery />
+        </section>
+
         {/* Combined Event Info Section (3 times merged) */}
         <section className="w-full">
           <motion.div 
@@ -102,6 +109,8 @@ export const Home = () => {
         <LocationSection />
 
         <RSVP />
+
+        <PostcardMessage />
 
       </main>
 
