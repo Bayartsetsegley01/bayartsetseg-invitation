@@ -4,10 +4,9 @@
 @import './theme-colors.css';
 
 @theme {
-  --font-sans: 'Cormorant Garamond', serif;
+  --font-sans: 'Montserrat', sans-serif;
 }
 
 body {
-  font-family: 'Cormorant Garamond', serif;
-  line-height: 1.8;
+  font-family: 'Montserrat', sans-serif;
 }

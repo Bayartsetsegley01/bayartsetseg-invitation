@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-type Theme = 'burgundy' | 'light' | 'dark' | 'pink';
+type Theme = 'light' | 'dark' | 'pink';
 
 interface ThemeContextProps {
   theme: Theme;
@@ -9,21 +9,25 @@ interface ThemeContextProps {
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
-const CYCLE: Theme[] = ['burgundy', 'light', 'dark', 'pink'];
-
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setTheme] = useState<Theme>('burgundy');
+  const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('dark', 'pink', 'burgundy');
-    if (theme !== 'light') root.classList.add(theme);
+    root.classList.remove('dark', 'pink');
+    
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else if (theme === 'pink') {
+      root.classList.add('pink');
+    }
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => {
-      const idx = CYCLE.indexOf(prev);
-      return CYCLE[(idx + 1) % CYCLE.length];
+    setTheme((prev) => {
+      if (prev === 'light') return 'dark';
+      if (prev === 'dark') return 'pink';
+      return 'light';
     });
   };
 
@@ -36,6 +40,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
-  if (!context) throw new Error('useTheme must be used within a ThemeProvider');
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
   return context;
 };
