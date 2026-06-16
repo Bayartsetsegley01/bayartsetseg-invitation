@@ -1,0 +1,12 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+@import './theme-colors.css';
+
+@theme {
+  --font-sans: 'Montserrat', sans-serif;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+}

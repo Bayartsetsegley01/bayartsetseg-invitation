@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-color: #fafafa;
+    --text-color: #18181b;
+    --accent-color: #F8D7E3;
+    --accent-text: #f3c8d7;
+    --card-bg: #ffffff;
+    --card-border: #f4f4f5;
+  }
+
+  :root.dark {
+    --bg-color: #09090b;
+    --text-color: #fafafa;
+    --accent-color: #F8D7E3;
+    --accent-text: #f3c8d7;
+    --card-bg: #18181b;
+    --card-border: #27272a;
+  }
+
+  :root.pink {
+    --bg-color: #F8D7E3;
+    --text-color: #18181b;
+    --accent-color: #09090b;
+    --accent-text: #ffffff;
+    --card-bg: #ffffff;
+    --card-border: #f3c8d7;
+  }
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.theme-bg {
+  background-color: var(--bg-color);
+}
+.theme-text {
+  color: var(--text-color);
+}
+.theme-accent {
+  color: var(--accent-color);
+}
+.theme-accent-bg {
+  background-color: var(--accent-color);
+}
+.theme-card {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+}
