@@ -5,7 +5,6 @@ import { useLanguage } from './contexts/LanguageContext';
 import { useTheme } from './contexts/ThemeContext';
 import { Countdown } from './components/Countdown';
 import { Calendar } from './components/Calendar';
-import { Gallery } from './components/Gallery';
 import { StackedGallery } from './components/StackedGallery';
 import { PostcardMessage } from './components/PostcardMessage';
 import { RSVP } from './components/RSVP';
@@ -60,11 +59,6 @@ export const Home = () => {
                 <p key={i} className="text-[10px] sm:text-xs uppercase tracking-[0.15em] font-light">{line}</p>
               ))}
               <p className="text-xs sm:text-sm font-normal mt-2 tracking-widest uppercase">{t.heroMajor}</p>
-            </div>
-
-            {/* Gallery right below the major */}
-            <div className="w-full -mt-8">
-              <Gallery />
             </div>
 
           </motion.div>
