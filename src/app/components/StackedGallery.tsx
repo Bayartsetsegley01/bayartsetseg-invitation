@@ -18,10 +18,12 @@ const CARD_W = 248;
 const CARD_H = 352;
 const RADIUS = 32;
 
-// Only the front card (slot 0) is visible — one photo at a time
+// 3 cards visible in a stack — front card on top, back cards peek behind
 const slotStyle = (slot: number) => {
-  if (slot === 0) return { rotate: 0, scale: 1, x: 0, y: 0, opacity: 1 };
-  return              { rotate: 0, scale: 1, x: 0, y: 0, opacity: 0 };
+  if (slot === 0) return { rotate: -1.5, scale: 1,    x: 0,  y: 0,  opacity: 1 };
+  if (slot === 1) return { rotate:  5.5, scale: 0.97, x: 10, y: 10, opacity: 1 };
+  if (slot === 2) return { rotate: -4,   scale: 0.93, x: 18, y: 18, opacity: 1 };
+  return              { rotate: -5,   scale: 0.90, x: 22, y: 22, opacity: 0 };
 };
 
 export const StackedGallery = () => {
@@ -53,8 +55,8 @@ export const StackedGallery = () => {
       transition={{ duration: 0.9, ease: 'easeOut' }}
       className="w-full flex flex-col items-center gap-8 py-4"
     >
-      {/* Card stack — no header */}
-      <div style={{ position: 'relative', width: CARD_W, height: CARD_H }}>
+      {/* Card stack */}
+      <div style={{ position: 'relative', width: CARD_W + 28, height: CARD_H + 28 }}>
 
 
         {deck.map((photoIdx, slot) => {
