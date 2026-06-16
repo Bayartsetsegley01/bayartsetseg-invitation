@@ -25,8 +25,19 @@ const STACK = [
   { rotate: -4,   scale: 0.93, x: 14, y: 16, z: 10, shadow: '0 6px 18px rgba(0,0,0,0.08)' },
 ];
 
-// Where new cards appear FROM before sliding into stack (further-back position)
+// New card enters from behind the back card
 const NEW_CARD_INITIAL = { rotate: -7, scale: 0.87, x: 20, y: 24, opacity: 0 };
+
+// Front card "goes around to the back" — moves right+down+shrinks, looks like going behind the pile
+const SEND_TO_BACK = {
+  x: 26,
+  y: 22,
+  scale: 0.82,
+  rotate: -6,
+  opacity: 0,
+  zIndex: 0,
+  transition: { duration: 0.32, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] },
+};
 
 export const StackedGallery = () => {
   const { t } = useLanguage();
@@ -99,15 +110,7 @@ export const StackedGallery = () => {
                   opacity: 1,
                   zIndex: pos.z,
                 }}
-                exit={{
-                  x: -(CARD_W + 80),
-                  y: -50,
-                  rotate: -22,
-                  opacity: 0,
-                  scale: 0.88,
-                  zIndex: 20,          // stay on top while flying away
-                  transition: { duration: 0.28, ease: [0.4, 0, 1, 1] },
-                }}
+                exit={SEND_TO_BACK}
                 transition={{
                   type: 'spring',
                   stiffness: 300,
