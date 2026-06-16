@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
@@ -16,27 +16,25 @@ const photos = [
 
 const CARD_W = 248;
 const CARD_H = 352;
-const RADIUS = 32;
+const RADIUS = 28;
+const GOLD   = '#C9A84C';
+const CREAM  = '#F5ECD7';
 
-// Visual position for each slot in the deck (slot 0 = front, 1 = middle, 2 = back, 3+ = hidden queue)
+// Visual position for each slot: 0 = front, 1 = mid, 2 = back, 3+ = hidden
 const slotStyle = (slot: number) => {
   if (slot === 0) return { rotate: -1.5, scale: 1,    x: 0,  y: 0,  opacity: 1 };
-  if (slot === 1) return { rotate:  5.5, scale: 0.97, x: 8,  y: 8,  opacity: 1 };
-  if (slot === 2) return { rotate: -4,   scale: 0.93, x: 14, y: 16, opacity: 1 };
-  // Hidden queue — parked just behind the back card, invisible
-  return              { rotate: -5,   scale: 0.90, x: 17, y: 20, opacity: 0 };
+  if (slot === 1) return { rotate:  5.5, scale: 0.97, x: 10, y: 10, opacity: 1 };
+  if (slot === 2) return { rotate: -4,   scale: 0.93, x: 18, y: 18, opacity: 1 };
+  return              { rotate: -5,   scale: 0.90, x: 22, y: 22, opacity: 0 };
 };
 
 export const StackedGallery = () => {
   const { t } = useLanguage();
 
-  // Full deck: order[0] = front, order[1] = middle, order[2] = back, rest = hidden queue
-  // Cycling: front card goes to end of queue, everyone shifts up
+  // Full deck — all photos always in memory; slot 0 = front, slots 3+ = hidden queue
   const [deck, setDeck] = useState<number[]>(() => photos.map((_, i) => i));
 
-  const goNext = () => {
-    setDeck(prev => [...prev.slice(1), prev[0]]); // send front → back of queue
-  };
+  const goNext = () => setDeck(prev => [...prev.slice(1), prev[0]]);
 
   const goTo = (photoIdx: number) => {
     setDeck(prev => {
@@ -54,53 +52,43 @@ export const StackedGallery = () => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.9, ease: 'easeOut' }}
-      className="w-full flex flex-col items-center gap-8 py-4"
+      className="w-full flex flex-col items-center gap-10 py-4"
     >
-      {/* Header */}
+      {/* Section heading */}
       <div className="text-center">
-        <p className="text-[10px] uppercase tracking-[0.35em] opacity-50 mb-2">{t.stackedGalleryLabel}</p>
-        <h2 className="text-2xl sm:text-3xl font-light tracking-wide">{t.stackedGalleryTitle}</h2>
+        <p style={{ fontSize: 10, letterSpacing: '0.35em', textTransform: 'uppercase', opacity: 0.45, marginBottom: 6 }}>
+          {t.stackedGalleryLabel}
+        </p>
+        <h2 style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic', fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 400, letterSpacing: '0.05em' }}>
+          {t.stackedGalleryTitle}
+        </h2>
       </div>
 
-      {/* Card stack */}
-      <div style={{ position: 'relative', width: CARD_W + 26, height: CARD_H + 26 }}>
+      {/* Card stack container */}
+      <div style={{ position: 'relative', width: CARD_W + 32, height: CARD_H + 32 }}>
 
-        {/* Soft radial glow */}
+        {/* Ambient glow — adapts to theme bg color */}
         <div style={{
           position: 'absolute',
-          top: '55%', left: '45%',
+          top: '50%', left: '44%',
           transform: 'translate(-50%,-50%)',
-          width: CARD_W + 180, height: CARD_H + 140,
-          background: 'radial-gradient(ellipse, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.55) 45%, transparent 72%)',
+          width: CARD_W + 200, height: CARD_H + 160,
+          background: 'radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 65%)',
           pointerEvents: 'none', zIndex: 0,
         }} />
 
         {deck.map((photoIdx, slot) => {
           const s = slotStyle(slot);
           const isFront = slot === 0;
-
-          // z-index: front card on top while it "goes around" to the back.
-          // Exiting card keeps its z above the remaining stack so it's visible sliding to back.
           const zIndex = slot === 0 ? 12 : slot === 1 ? 11 : slot === 2 ? 10 : 0;
 
           return (
             <motion.div
               key={photoIdx}
-              // animate drives position for ALL deck cards (hidden queue cards just sit invisible)
-              animate={{
-                rotate: s.rotate,
-                scale:  s.scale,
-                x:      s.x,
-                y:      s.y,
-                opacity: s.opacity,
-              }}
+              animate={{ rotate: s.rotate, scale: s.scale, x: s.x, y: s.y, opacity: s.opacity }}
               transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 28,
-                mass: 0.85,
-                // front card exiting to back: slightly faster so it feels snappy
-                opacity: { duration: 0.25 },
+                type: 'spring', stiffness: 300, damping: 28, mass: 0.85,
+                opacity: { duration: 0.22 },
               }}
               drag={isFront ? 'x' : false}
               dragConstraints={{ left: 0, right: 0 }}
@@ -115,27 +103,82 @@ export const StackedGallery = () => {
                 top: 0, left: 0,
                 width: CARD_W, height: CARD_H,
                 borderRadius: RADIUS,
-                overflow: 'hidden',
+                // Overflow NOT hidden here — so ornate corner flourishes aren't clipped
+                overflow: 'visible',
                 cursor: isFront ? 'grab' : 'default',
                 zIndex,
                 touchAction: 'none',
                 willChange: 'transform, opacity',
-                boxShadow: slot === 0
-                  ? '0 24px 64px rgba(0,0,0,0.22), 0 6px 20px rgba(0,0,0,0.10)'
+                // Ornate frame for front card — gold ring + cream padding ring
+                boxShadow: isFront
+                  ? `0 0 0 9px ${CREAM}, 0 0 0 10px ${GOLD}88, 0 0 0 12px ${CREAM}55, 0 28px 70px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.15)`
                   : slot === 1
-                  ? '0 12px 32px rgba(0,0,0,0.13)'
+                  ? '0 14px 36px rgba(0,0,0,0.18)'
                   : slot === 2
-                  ? '0 6px 18px rgba(0,0,0,0.08)'
+                  ? '0 6px 18px rgba(0,0,0,0.12)'
                   : 'none',
               }}
             >
-              <ImageWithFallback
-                src={photos[photoIdx]}
-                alt={`Photo ${photoIdx + 1}`}
-                className="w-full h-full object-cover"
-                draggable={false}
-                style={{ pointerEvents: 'none', userSelect: 'none' }}
-              />
+              {/* Photo — clipped inside rounded rect, grayscale+sepia filter */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                borderRadius: RADIUS, overflow: 'hidden',
+              }}>
+                <ImageWithFallback
+                  src={photos[photoIdx]}
+                  alt={`Photo ${photoIdx + 1}`}
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                  style={{
+                    pointerEvents: 'none',
+                    userSelect: 'none',
+                    filter: 'grayscale(100%) sepia(18%) contrast(1.05) brightness(0.95)',
+                  }}
+                />
+                {/* Subtle vignette overlay */}
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.35) 100%)',
+                  pointerEvents: 'none',
+                }} />
+              </div>
+
+              {/* Ornate gold corner flourishes — only on front card */}
+              {isFront && (
+                <>
+                  {[
+                    { top: 10, left: 10 },
+                    { top: 10, right: 10 },
+                    { bottom: 10, left: 10 },
+                    { bottom: 10, right: 10 },
+                  ].map((pos, i) => (
+                    <span key={i} style={{
+                      position: 'absolute', ...pos,
+                      color: GOLD,
+                      fontSize: 15,
+                      lineHeight: 1,
+                      pointerEvents: 'none',
+                      zIndex: 5,
+                      textShadow: `0 0 10px ${GOLD}80`,
+                      opacity: 0.85,
+                    }}>✦</span>
+                  ))}
+                  {/* "Class of 2026" caption at bottom of front card */}
+                  <div style={{
+                    position: 'absolute', bottom: 16, left: 0, right: 0,
+                    textAlign: 'center', pointerEvents: 'none', zIndex: 5,
+                    fontFamily: 'Playfair Display, serif',
+                    fontStyle: 'italic',
+                    fontSize: 10,
+                    letterSpacing: '0.2em',
+                    color: CREAM,
+                    opacity: 0.65,
+                    textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+                  }}>
+                    class of 2026
+                  </div>
+                </>
+              )}
             </motion.div>
           );
         })}
@@ -149,19 +192,18 @@ export const StackedGallery = () => {
             onClick={() => goTo(i)}
             animate={{
               width: i === frontPhoto ? 28 : 8,
-              backgroundColor: i === frontPhoto ? '#1c1c1c' : '#d0d0d0',
+              backgroundColor: i === frontPhoto ? GOLD : '#6b6b6b',
             }}
             transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-            style={{
-              height: 8, borderRadius: 4, border: 'none',
-              padding: 0, cursor: 'pointer', flexShrink: 0,
-            }}
+            style={{ height: 8, borderRadius: 4, border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}
             aria-label={`Photo ${i + 1}`}
           />
         ))}
       </div>
 
-      <p className="text-[9px] uppercase tracking-[0.3em] opacity-30 -mt-4">{t.stackedGalleryHint}</p>
+      <p style={{ fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', opacity: 0.28, marginTop: -12 }}>
+        {t.stackedGalleryHint}
+      </p>
     </motion.section>
   );
 };

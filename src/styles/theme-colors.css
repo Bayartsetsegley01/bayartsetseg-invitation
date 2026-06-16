@@ -3,24 +3,27 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Light ── */
   :root {
     --bg-color: #fafafa;
     --text-color: #18181b;
     --accent-color: #F8D7E3;
-    --accent-text: #f3c8d7;
+    --accent-text: #18181b;
     --card-bg: #ffffff;
     --card-border: #f4f4f5;
   }
 
+  /* ── Dark ── */
   :root.dark {
     --bg-color: #09090b;
     --text-color: #fafafa;
     --accent-color: #F8D7E3;
-    --accent-text: #f3c8d7;
+    --accent-text: #18181b;
     --card-bg: #18181b;
     --card-border: #27272a;
   }
 
+  /* ── Pink ── */
   :root.pink {
     --bg-color: #F8D7E3;
     --text-color: #18181b;
@@ -28,6 +31,16 @@
     --accent-text: #ffffff;
     --card-bg: #ffffff;
     --card-border: #f3c8d7;
+  }
+
+  /* ── Burgundy (OLD MONEY) — DEFAULT ── */
+  :root.burgundy {
+    --bg-color: #2C1010;
+    --text-color: #F5ECD7;
+    --accent-color: #C9A84C;
+    --accent-text: #2C1010;
+    --card-bg: #3D1515;
+    --card-border: #5C2020;
   }
 }
 
@@ -37,18 +50,11 @@ body {
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
-.theme-bg {
-  background-color: var(--bg-color);
-}
-.theme-text {
-  color: var(--text-color);
-}
-.theme-accent {
-  color: var(--accent-color);
-}
-.theme-accent-bg {
-  background-color: var(--accent-color);
-}
+.theme-bg   { background-color: var(--bg-color); }
+.theme-text { color: var(--text-color); }
+.theme-accent     { color: var(--accent-color); }
+.theme-accent-bg  { background-color: var(--accent-color); }
+.theme-accent-text { color: var(--accent-text); }
 .theme-card {
   background-color: var(--card-bg);
   border-color: var(--card-border);
